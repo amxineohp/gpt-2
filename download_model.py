@@ -15,6 +15,8 @@ if not os.path.exists(subdir):
 subdir = subdir.replace('\\','/') # needed for Windows
 
 for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-00000-of-00001', 'model.ckpt.index', 'model.ckpt.meta', 'vocab.bpe']:
+    url = "https://storage.googleapis.com/gpt-2/" + subdir + "/" + filename
+    print('will download {}'.format(url))
 
     r = requests.get("https://storage.googleapis.com/gpt-2/" + subdir + "/" + filename, stream=True)
 
