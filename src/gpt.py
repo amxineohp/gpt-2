@@ -45,8 +45,13 @@ class GPT(TF):
 
     def _process_data(self, data, data_type):
         x = {'fnames':[], 'seqs':[]}
+        logging.info('start process data %s', data_type)
         for fname, text in data.items():
-            seq = np.stack(self.enc.encode(text)).astype(np.int32)
+            seqs = []; chunk = 1000000
+            for i in range((len(text) + chunk -1)//chunk):
+                seq = np.array(self.enc.encode(text[i*chunk:(i+1)*chunk]))
+                seqs.append(seq)
+            seq = np.concatenate(seqs)
             x['fnames'].append(fname)
             x['seqs'].append(seq)
         return x, None
