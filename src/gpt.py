@@ -24,15 +24,20 @@ class GPT(TF):
         self.cfg = deepcopy(self.cfg)
         self.cfg.update(cfg)
         cfg = self.cfg
-        if cfg.debug:
-            cfg.batch_reader_cfg['max_seq_len'] = 2
 
         self.enc = encoder.get_encoder(cfg.model_name, cfg.models_dir)
         hparams = model.default_hparams()
         with open(os.path.join(cfg.models_dir, cfg.model_name, 'hparams.json')) as f:
             hparams.override_from_dict(json.load(f))
+        if cfg.debug:
+            cfg.batch_reader_cfg['max_seq_len'] = 2
+            hparams.n_layer=2
+            hparams.n_layer=2
+            hparams.n_head=2
+            hparams.n_embd=8
+            hparams.n_ctx=16
+            cfg.batch_reader_cfg['max_seq_len'] = 8
         cfg.hparams = hparams
-        cfg.batch_reader_cfg['max_seq_len'] = hparams.n_ctx//2
         self.past = None
 
         super(GPT, self).__init__(name, {}, batch_reader)
@@ -41,7 +46,7 @@ class GPT(TF):
     def _process_data(self, data, data_type):
         x = {'fnames':[], 'seqs':[]}
         for fname, text in data.items():
-            seq = np.stack(self.enc.encode(text))
+            seq = np.stack(self.enc.encode(text)).astype(np.int32)
             x['fnames'].append(fname)
             x['seqs'].append(seq)
         return x, None
@@ -80,12 +85,12 @@ class ArgParser(mu.TrainArgParser):
     def add_args(parser):
         super(ArgParser, ArgParser).add_args(parser)
         parser.add_argument("-use_past", "--use_past", action="store_true", help="use past")
+        parser.add_argument("-model_name", "--model_name", help="model name:117M")
 
 
 def train(args):
     trainer = mu.training.Trainer('Trainer', SEED)
-    data_func = getattr(util, 'load_' + args.dataset)
-    data = data_func(args.debug)
+    data = util.load_data(args.dataset, dir=args.dataset, debug=args.debug)
 
     trainer.train_model(data, args, gl)
 

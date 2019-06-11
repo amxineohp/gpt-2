@@ -36,11 +36,15 @@ def load_dataset(enc, path, use_linesep=False):
     return token_chunks
 
 
-def load_wikitext103(debug=False):
-    data_dict = mu.dataset.load_dataset('wikitext103', use_line=False)
+def load_data(dataset, dir='', splits=['train', 'valid'], debug=False):
+    if dataset=='wikitext103':
+        data_dict = mu.dataset.load_dataset(dataset, use_line=False)
+    else:
+        data_dict = mu.dataset.load_dataset(dataset, splits=splits, use_line=False, datatype='plaintext')
+
     if debug:
         for split, split_data in data_dict.items():
             for fname, text in split_data.items():
-                split_data[fname] = text[0:10]
+                split_data[fname] = text[0:100]
     return data_dict
 
