@@ -1,6 +1,6 @@
 """Byte pair encoding utilities"""
 
-import os
+import os, numpy as np
 import json
 import regex as re
 from functools import lru_cache
@@ -108,6 +108,8 @@ class Encoder:
 def get_encoder(model_name, models_dir):
     with open(os.path.join(models_dir, model_name, 'encoder.json'), 'r') as f:
         encoder = json.load(f)
+        for k, v in encoder.items():
+            encoder[k] = np.int32(v)
     with open(os.path.join(models_dir, model_name, 'vocab.bpe'), 'r', encoding="utf-8") as f:
         bpe_data = f.read()
     bpe_merges = [tuple(merge_str.split()) for merge_str in bpe_data.split('\n')[1:-1]]
