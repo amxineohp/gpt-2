@@ -32,7 +32,7 @@ class GPT(TF):
         self.cfg.update(cfg)
         cfg = self.cfg
 
-        self.enc = encoder.get_encoder(cfg.openai_model, cfg.data_dir)
+        self.enc = encoder.get_encoder(cfg.openai_model, os.path.join(cfg.data_dir, 'models'))
         with open(os.path.join(cfg.data_dir, cfg.openai_model, 'hparams.json')) as f:
             cfg.update(json.load(f))
         if cfg.debug:
