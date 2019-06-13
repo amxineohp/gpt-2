@@ -25,6 +25,7 @@ class GPT(TF):
     cfg.n_embd = 768
     cfg.n_head = 12
     cfg.n_layer = 12
+    cfg.save_processed = False
     cfg.batch_reader_cfg = {'process_mode': 'N'}
 
     def __init__(self, name, cfg={}, batch_reader=None):
@@ -62,6 +63,13 @@ class GPT(TF):
     def _process_data(self, data, data_type):
         x = {'fnames':[], 'seqs':[]}
         logging.info('start process data %s', data_type)
+
+        processed_fname = self.gen_fname('', data_type + '_processed.dump')
+        if self.cfg.save_processed:
+            if os.path.exists(processed_fname):
+                logging.info('load processed data from %s', processed_fname)
+                x = mu.load_dump(processed_fname)
+                return x, None
         for fname, text in data.items():
             seqs = []; chunk = 10000000
             for i in range((len(text) + chunk -1)//chunk):
@@ -70,6 +78,9 @@ class GPT(TF):
             seq = np.concatenate(seqs)
             x['fnames'].append(fname)
             x['seqs'].append(seq)
+        if self.cfg.save_processed:
+            mu.dump(x, processed_fname)
+
         logging.info('total seqs %s, total tokens %s', len(x['seqs']), sum(map(len, x['seqs'])))
         return x, None
 
@@ -84,7 +95,8 @@ class GPT(TF):
     def run(self, sess, batch, nodes):
         feed = self.get_feed(batch)
         outputs = sess.run(nodes, feed)
-        self.present = outputs.pop('present')
+        if self.cfg.use_past:
+            self.present = outputs.pop('present')
         return outputs
 
     def _add_train_nodes(self):
