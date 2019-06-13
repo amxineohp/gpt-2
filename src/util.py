@@ -36,7 +36,7 @@ def load_dataset(enc, path, use_linesep=False):
     return token_chunks
 
 
-def load_data(dataset, dir='', splits=['train', 'valid'], debug=False):
+def load_data(dataset, splits=['train', 'valid'], debug=False):
     if dataset=='wikitext103':
         data_dict = mu.dataset.load_dataset(dataset, use_line=False)
     else:
@@ -45,6 +45,6 @@ def load_data(dataset, dir='', splits=['train', 'valid'], debug=False):
     if debug:
         for split, split_data in data_dict.items():
             for fname, text in split_data.items():
-                split_data[fname] = text[0:100]
+                split_data[fname] = text[0:1001]
     return data_dict
 
