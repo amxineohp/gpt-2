@@ -64,7 +64,7 @@ class GPT(TF):
         x = {'fnames':[], 'seqs':[]}
         logging.info('start process data %s', data_type)
 
-        processed_fname = self.gen_fname('', data_type + '_processed.dump')
+        processed_fname = self.gen_fname('', self.cfg.dataset + '_' + data_type + '_processed.dump')
         if self.cfg.save_processed:
             if os.path.exists(processed_fname):
                 logging.info('load processed data from %s', processed_fname)
