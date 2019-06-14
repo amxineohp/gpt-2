@@ -141,6 +141,8 @@ def train(args):
 
 if __name__ == '__main__':
     args = ArgParser.load_args()
+    from imp import reload
+    reload(logging)
 
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(threadName)s %(message)s')
