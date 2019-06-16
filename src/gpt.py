@@ -22,6 +22,7 @@ class GPT(TF):
     cfg.use_past = False
     cfg.n_vocab = 50257
     cfg.n_ctx = 1024
+    cfg.max_seq_len = cfg.n_ctx
     cfg.n_embd = 768
     cfg.n_head = 12
     cfg.n_layer = 12
@@ -32,7 +33,6 @@ class GPT(TF):
         self.cfg = deepcopy(self.cfg)
         self.cfg.update(cfg)
         cfg = self.cfg
-        n_ctx = cfg.n_ctx
 
         self.enc = encoder.get_encoder(cfg.openai_model, os.path.join(cfg.data_dir, 'models'))
         with open(os.path.join(cfg.data_dir, 'models', cfg.openai_model, 'hparams.json')) as f:
@@ -42,9 +42,8 @@ class GPT(TF):
             cfg.n_head=2
             cfg.n_embd=8
             cfg.n_ctx=16
-            cfg.batch_reader_cfg['max_seq_len'] = 8
-        cfg.n_ctx = n_ctx
-        cfg.batch_reader_cfg['max_seq_len'] = cfg.n_ctx
+            cfg.max_seq_len = 8
+        cfg.batch_reader_cfg['max_seq_len'] = cfg.max_seq_len
         if cfg.use_past:
             assert cfg.batch_size==1, "current only batch size 1 supported when use past"
             cfg.val_batch_size = cfg.batch_size
@@ -131,7 +130,7 @@ class ArgParser(mu.TrainArgParser):
         parser.add_argument("-restore_openai", "--restore_openai", action="store_true", help="restore from open ai")
         parser.add_argument("-openai_model", "--openai_model", default='117M', help="openai model used for tuning")
         parser.add_argument("-use_past", "--use_past", action="store_true", help="use_past")
-        parser.add_argument("-n_ctx", "--n_ctx", type=int, help="n_ctx")
+        parser.add_argument("-msl", "--max_seq_len", type=int, help="max seq len")
 
 
 
