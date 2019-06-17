@@ -154,8 +154,7 @@ def model(hparams, X, past=None, scope='model', reuse=False):
         wte = tf.get_variable('wte', [hparams.n_vocab, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.02))
         past_length = 0 if past is None else tf.shape(past)[-2]
-        #h = tf.gather(wte, X) + tf.gather(wpe, positions_for(X, past_length))
-        h = tf.nn.embedding_lookup(wte, X) + tf.nn.embedding_lookup(wpe, positions_for(X, past_length))
+        h = tf.gather(wte, X) + tf.gather(wpe, positions_for(X, past_length))
 
         # Transformer
         presents = []
