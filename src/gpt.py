@@ -7,7 +7,7 @@ from mautil.basic_model import InputFeature
 from mautil import data_reader
 from mautil.tf_models import TF
 from tensorflow.core.protobuf import rewriter_config_pb2
-import model, sample, encoder
+import model, sample, encoder, memory_saving_gradients
 import util
 
 SEED = 9527
@@ -100,6 +100,24 @@ class GPT(TF):
             self.present = outputs.pop('present')
         return outputs
 
+    def _add_train_op(self, loss, var_list, name='train_op', clip=None, lr_node=None, global_step=None, opt=None, opt_name='adam'):
+        if global_step is None:
+            global_step = tf.Variable(0, trainable=False, name = 'global_step')
+        if lr_node is None:
+            lr_node = tf.train.exponential_decay(learning_rate=self._lr_plh, global_step=global_step, staircase=False, decay_steps = self.cfg.lr_decay_steps, decay_rate=self.cfg.lr_decay_rate, name = 'learning_rate')
+        self._lr_node = lr_node
+        if opt is None:
+            opt = tf.train.AdamOptimizer(learning_rate=lr_node, name=opt_name)
+
+        
+        if self.cfg.use_sg:
+            grads = memory_saving_gradients.gradients(loss, var_list)
+            train_op = opt.apply_gradients(zip(grads, var_list), global_step=global_step, name=name)
+            return train_op, grads, global_step, lr_node, opt
+        else:
+            return super(GPT, self)._add_train_op(loss, var_list, name=name, clip=clip, lr_node=lr_node, global_step=global_step, opt=opt, opt_name=opt_name)
+
+
     def _add_train_nodes(self):
         super(GPT, self)._add_train_nodes()
         if self.cfg.use_past:
@@ -131,6 +149,7 @@ class ArgParser(mu.TrainArgParser):
         parser.add_argument("-openai_model", "--openai_model", default='117M', help="openai model used for tuning")
         parser.add_argument("-use_past", "--use_past", action="store_true", help="use_past")
         parser.add_argument("-msl", "--max_seq_len", type=int, help="max seq len")
+        parser.add_argument("-use_sg", "--use_sg", action="store_true", help="use memory_saving_gradients")
 
 
 
