@@ -58,7 +58,7 @@ class GPT(TF):
 
     def create_model(self):
         super(GPT, self).create_model()
-        if cfg.restore_openai:
+        if self.cfg.restore_openai:
             with self._graph.as_default():
                 self.restore(model_dir= os.path.join(cfg.data_dir, 'models', cfg.openai_model), var_list=tf.trainable_variables())
 
