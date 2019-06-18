@@ -60,7 +60,7 @@ class GPT(TF):
         super(GPT, self).create_model()
         if self.cfg.restore_openai:
             with self._graph.as_default():
-                self.restore(model_dir= os.path.join(cfg.data_dir, 'models', cfg.openai_model), var_list=tf.trainable_variables())
+                self.restore(model_dir= os.path.join(self.cfg.data_dir, 'models', self.cfg.openai_model), var_list=tf.trainable_variables())
 
     def _process_data(self, data, data_type):
         x = {'fnames':[], 'seqs':[]}
