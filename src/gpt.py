@@ -56,7 +56,7 @@ class GPT(TF):
         super(GPT, self).__init__(name, {}, batch_reader)
         super(TF, self).save()
 
-    def create_model():
+    def create_model(self):
         super(GPT, self).create_model()
         if cfg.restore_openai:
             with self._graph.as_default():
