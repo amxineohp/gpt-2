@@ -1,4 +1,4 @@
-import logging, sys, os, inspect, json, numpy as np
+import logging, sys, os, inspect, json, numpy as np, gc
 from copy import deepcopy
 from collections import OrderedDict
 import tensorflow as tf
@@ -56,8 +56,9 @@ class GPT(TF):
         super(GPT, self).__init__(name, {}, batch_reader)
         super(TF, self).save()
 
+    def create_model():
+        super(GPT, self).create_model()
         if cfg.restore_openai:
-            self.create_model()
             with self._graph.as_default():
                 self.restore(model_dir= os.path.join(cfg.data_dir, 'models', cfg.openai_model), var_list=tf.trainable_variables())
 
@@ -156,8 +157,16 @@ class ArgParser(mu.TrainArgParser):
 def train(args):
     trainer = mu.training.Trainer('Trainer', SEED)
     data = util.load_data(args.dataset, debug=args.debug)
+    name = mu.parse_model_name(args.model_names)[0]
+    model = mu.create_model(name, args, gl[name], SEED)
+    x_train, y_train, x_validate, y_validate, x_test, y_test =  model.process_data(data)
+    data['train'] = (x_train, y_train)
+    data['validate'] = (x_validate, y_validate)
+    data['test'] = (x_test, y_test)
+    del model
+    gc.collect()
 
-    trainer.train_model(data, args, gl)
+    trainer.train_model(data, args, gl, process_data=False)
 
 
 if __name__ == '__main__':
